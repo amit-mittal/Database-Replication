@@ -113,9 +113,10 @@ namespace ReplicationService.DatabaseAdapters
                                 DateTime time = DateTime.Parse(dataReader["event_time"].ToString());
                                 string c = Encoding.UTF8.GetString((byte[])dataReader["argument"]);
 
-                                if (c.StartsWith("INSERT", StringComparison.OrdinalIgnoreCase) ||
+                                if (IsTableOfInterest(c) &&
+                                    (c.StartsWith("INSERT", StringComparison.OrdinalIgnoreCase) ||
                                     c.StartsWith("UPDATE", StringComparison.OrdinalIgnoreCase) ||
-                                    c.StartsWith("DELETE", StringComparison.OrdinalIgnoreCase))
+                                    c.StartsWith("DELETE", StringComparison.OrdinalIgnoreCase)))
                                 {
                                     commands.Add(new Tuple<DateTime, string>(time, c));
                                 }
@@ -130,6 +131,16 @@ namespace ReplicationService.DatabaseAdapters
                     return commands;
                 }
             }
+        }
+
+        private bool IsTableOfInterest(string command)
+        {
+            if (command.Contains("Patients") || command.Contains("Appointments"))
+            {
+                return true;
+            }
+
+            return false;
         }
     }
 }
